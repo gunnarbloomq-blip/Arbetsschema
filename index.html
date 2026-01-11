@@ -91,6 +91,19 @@
             color: white;
             font-weight: bold;
         }
+        .past-day {
+            background: #e0e0e0 !important;
+            color: #888;
+            font-style: italic;
+        }
+        .past-day.work-day {
+            background: #d3d3d3 !important;
+            color: #888;
+        }
+        .past-day.holiday-day {
+            background: #c9c9c9 !important;
+            color: #666;
+        }
         .copy-btn {
             background: #4CAF50;
             color: white;
@@ -245,6 +258,18 @@
                     holidayCell.textContent = holiday;
                     if (holiday) {
                         holidayCell.className = 'holiday-day';
+                    }
+                    
+                    // Markera passerade dagar
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const currentDateCheck = new Date(year, month - 1, day);
+                    currentDateCheck.setHours(0, 0, 0, 0);
+                    
+                    if (currentDateCheck < today) {
+                        for (let i = 0; i < row.cells.length; i++) {
+                            row.cells[i].classList.add('past-day');
+                        }
                     }
                 }
             }
