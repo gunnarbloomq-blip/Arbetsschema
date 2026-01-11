@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbetsschema 2026</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #1976D2;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .legend {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .legend span {
+            display: inline-block;
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        .work {
+            background: #FFA500;
+            font-weight: bold;
+        }
+        .holiday {
+            background: #FF6B6B;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th {
+            background: #4A90E2;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background: #f0f0f0;
+        }
+        .work-day {
+            background: #FFA500 !important;
+            font-weight: bold;
+        }
+        .holiday-day {
+            background: #FF6B6B !important;
+            color: white;
+            font-weight: bold;
+        }
+        .copy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .copy-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Arbetsschema 2026</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instruktioner för Google Sheets:</h3>
+            <ol>
+                <li>Klicka på knappen "Kopiera tabell" nedan</li>
+                <li>Öppna Google Sheets och skapa ett nytt dokument</li>
+                <li>Klicka i cell A1</li>
+                <li>Tryck Ctrl+V (eller Cmd+V på Mac) för att klistra in</li>
+                <li>Färgerna följer automatiskt med!</li>
+            </ol>
+        </div>
+
+        <button class="copy-btn" onclick="copyTable()">📋 Kopiera tabell</button>
+        
+        <div class="legend">
+            <strong>Förklaring:</strong>
+            <span class="work">Orange = Jobbdagar</span>
+            <span class="holiday">Röd = Helgdagar</span>
+            <br><br>
+            <strong>Arbetscykel:</strong> Jobb ons-ons (8 dagar) → Ledig tors-tis (13 dagar) → Jobb ons-ons (8 dagar) → Ledig tors-tis (6 dagar)
+        </div>
+
+        <table id="scheduleTable">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Veckodag</th>
+                    <th>Vecka</th>
+                    <th>Status</th>
+                    <th>Helgdag</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const holidays = {
+            '2026-01-01': 'Nyårsdagen',
+            '2026-01-06': 'Trettondagen',
+            '2026-04-03': 'Långfredagen',
+            '2026-04-05': 'Påskdagen',
+            '2026-04-06': 'Annandag påsk',
+            '2026-05-01': 'Första maj',
+            '2026-05-14': 'Kristi himmelsfärdsdag',
+            '2026-05-24': 'Pingstdagen',
+            '2026-06-19': 'Midsommarafton',
+            '2026-06-20': 'Midsommardagen',
+            '2026-11-01': 'Alla helgons dag',
+            '2026-12-06': 'Självständighetsdagen',
+            '2026-12-24': 'Julafton',
+            '2026-12-25': 'Juldagen',
+            '2026-12-26': 'Annandag jul'
+        };
+
+        const weekdays = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
+
+        // Funktion för att avgöra om ett datum är jobbdag
+        // Cykel: 8 jobb (ons-ons), 13 ledig (tors-tis), 8 jobb (ons-ons), 6 ledig (tors-tis) = 35 dagar totalt
+        function isWorkDay(year, month, day) {
+            // Referenspunkt: 31 dec 2025 (onsdag) är första jobbdagen
+            const refDate = new Date(2025, 11, 31, 0, 0, 0); // 31 dec 2025 kl 00:00
+            const currentDate = new Date(year, month - 1, day, 0, 0, 0); // Aktuellt datum kl 00:00
+            
+            // Räkna exakt antal dagar sedan referensdatum
+            const diffTime = currentDate.getTime() - refDate.getTime();
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+            
+            // 35-dagars cykel:
+            // Dag 0-7: Jobb (ons 31/12 till ons 7/1) - 8 dagar
+            // Dag 8-20: Ledig (tors 8/1 till tis 20/1) - 13 dagar  
+            // Dag 21-28: Jobb (ons 21/1 till ons 28/1) - 8 dagar
+            // Dag 29-34: Ledig (tors 29/1 till tis 3/2) - 6 dagar
+            const cyclePosition = ((diffDays % 35) + 35) % 35;
+            
+            return (cyclePosition >= 0 && cyclePosition <= 7) || 
+                   (cyclePosition >= 21 && cyclePosition <= 28);
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function generateSchedule() {
+            const tbody = document.getElementById('tableBody');
+            
+            // Gå igenom alla dagar i 2026
+            for (let month = 1; month <= 12; month++) {
+                const daysInMonth = new Date(2026, month, 0).getDate();
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    // Skapa datum med lokal tid för korrekt veckodag
+                    const date = new Date(2026, month - 1, day);
+                    const dateStr = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    
+                    // Veckodag (JavaScript räknar 0=söndag, 1=måndag, etc)
+                    const weekday = weekdays[date.getDay()];
+                    
+                    // Veckonummer
+                    const weekNum = getWeekNumber(date);
+                    
+                    // Är det jobbdag?
+                    const isWork = isWorkDay(2026, month, day);
+                    
+                    // Helgdag?
+                    const holiday = holidays[dateStr] || '';
+                    
+                    // Skapa rad
+                    const row = tbody.insertRow();
+                    
+                    // Datum
+                    row.insertCell().textContent = dateStr;
+                    
+                    // Veckodag
+                    row.insertCell().textContent = weekday;
+                    
+                    // Vecka
+                    row.insertCell().textContent = weekNum;
+                    
+                    // Status
+                    const statusCell = row.insertCell();
+                    statusCell.textContent = isWork ? 'Jobb' : 'Ledig';
+                    if (isWork) {
+                        statusCell.className = 'work-day';
+                    }
+                    
+                    // Helgdag
+                    const holidayCell = row.insertCell();
+                    holidayCell.textContent = holiday;
+                    if (holiday) {
+                        holidayCell.className = 'holiday-day';
+                    }
+                }
+            }
+        }
+
+        function copyTable() {
+            const table = document.getElementById('scheduleTable');
+            const range = document.createRange();
+            range.selectNode(table);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✓ Kopierad!';
+                btn.style.background = '#4CAF50';
+                setTimeout(() => {
+                    btn.textContent = '📋 Kopiera tabell';
+                    btn.style.background = '#4CAF50';
+                }, 2000);
+            } catch (err) {
+                alert('Kunde inte kopiera. Markera tabellen manuellt och tryck Ctrl+C');
+            }
+            
+            window.getSelection().removeAllRanges();
+        }
+
+        // Generera schemat när sidan laddas
+        generateSchedule();
+        
+        // Verifiera några datum i konsolen
+        console.log('Verifiering:');
+        console.log('31 dec 2025 - 7 jan 2026: Jobb');
+        console.log('8 jan - 20 jan: Ledig');
+        console.log('21 jan - 28 jan: Jobb');
+        console.log('29 jan - 3 feb: Ledig');
+    </script>
+</body>
+</html>
