@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbetsschema 2026</title>
+    <title>Arbetsschema 2026-2027</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -109,6 +109,14 @@
             background: #c9c9c9 !important;
             color: #666;
         }
+        .year-separator {
+            background: #2196F3 !important;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+            padding: 15px !important;
+        }
         .copy-btn {
             background: #4CAF50;
             color: white;
@@ -126,7 +134,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Arbetsschema 2026</h1>
+        <h1>Arbetsschema 2026-2027</h1>
         
         <div class="instructions">
             <h3>📋 Instruktioner för Google Sheets:</h3>
@@ -167,6 +175,7 @@
 
     <script>
         const holidays = {
+            // 2026
             '2026-01-01': 'Nyårsdagen',
             '2026-01-06': 'Trettondagen',
             '2026-04-03': 'Långfredagen',
@@ -181,7 +190,23 @@
             '2026-12-06': 'Självständighetsdagen',
             '2026-12-24': 'Julafton',
             '2026-12-25': 'Juldagen',
-            '2026-12-26': 'Annandag jul'
+            '2026-12-26': 'Annandag jul',
+            // 2027
+            '2027-01-01': 'Nyårsdagen',
+            '2027-01-06': 'Trettondagen',
+            '2027-03-26': 'Långfredagen',
+            '2027-03-28': 'Påskdagen',
+            '2027-03-29': 'Annandag påsk',
+            '2027-05-01': 'Första maj',
+            '2027-05-06': 'Kristi himmelsfärdsdag',
+            '2027-05-16': 'Pingstdagen',
+            '2027-06-25': 'Midsommarafton',
+            '2027-06-26': 'Midsommardagen',
+            '2027-11-06': 'Alla helgons dag',
+            '2027-12-06': 'Självständighetsdagen',
+            '2027-12-24': 'Julafton',
+            '2027-12-25': 'Juldagen',
+            '2027-12-26': 'Annandag jul'
         };
 
         const weekdays = ['Söndag', 'Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag'];
@@ -208,41 +233,53 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
-            for (let month = 1; month <= 12; month++) {
-                const daysInMonth = new Date(2026, month, 0).getDate();
+            // Generera för både 2026 och 2027
+            for (let year = 2026; year <= 2027; year++) {
+                // Lägg till årsseparator
+                if (year > 2026) {
+                    const separatorRow = tbody.insertRow();
+                    const separatorCell = separatorRow.insertCell();
+                    separatorCell.colSpan = 5;
+                    separatorCell.className = 'year-separator';
+                    separatorCell.textContent = `══════════ ${year} ══════════`;
+                }
                 
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const date = new Date(2026, month - 1, day);
-                    const dateStr = `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const weekday = weekdays[date.getDay()];
-                    const weekNum = getWeekNumber(date);
-                    const isWork = isWorkDay(2026, month, day);
-                    const holiday = holidays[dateStr] || '';
+                for (let month = 1; month <= 12; month++) {
+                    const daysInMonth = new Date(year, month, 0).getDate();
                     
-                    const row = tbody.insertRow();
-                    
-                    row.insertCell().textContent = dateStr;
-                    row.insertCell().textContent = weekday;
-                    row.insertCell().textContent = weekNum;
-                    
-                    const statusCell = row.insertCell();
-                    statusCell.textContent = isWork ? 'Jobb' : 'Ledig';
-                    if (isWork) {
-                        statusCell.className = 'work-day';
-                    }
-                    
-                    const holidayCell = row.insertCell();
-                    holidayCell.textContent = holiday;
-                    if (holiday) {
-                        holidayCell.className = 'holiday-day';
-                    }
-                    
-                    const currentDateCheck = new Date(2026, month - 1, day);
-                    currentDateCheck.setHours(0, 0, 0, 0);
-                    
-                    if (currentDateCheck < today) {
-                        for (let i = 0; i < row.cells.length; i++) {
-                            row.cells[i].classList.add('past-day');
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const date = new Date(year, month - 1, day);
+                        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const weekday = weekdays[date.getDay()];
+                        const weekNum = getWeekNumber(date);
+                        const isWork = isWorkDay(year, month, day);
+                        const holiday = holidays[dateStr] || '';
+                        
+                        const row = tbody.insertRow();
+                        
+                        row.insertCell().textContent = dateStr;
+                        row.insertCell().textContent = weekday;
+                        row.insertCell().textContent = weekNum;
+                        
+                        const statusCell = row.insertCell();
+                        statusCell.textContent = isWork ? 'Jobb' : 'Ledig';
+                        if (isWork) {
+                            statusCell.className = 'work-day';
+                        }
+                        
+                        const holidayCell = row.insertCell();
+                        holidayCell.textContent = holiday;
+                        if (holiday) {
+                            holidayCell.className = 'holiday-day';
+                        }
+                        
+                        const currentDateCheck = new Date(year, month - 1, day);
+                        currentDateCheck.setHours(0, 0, 0, 0);
+                        
+                        if (currentDateCheck < today) {
+                            for (let i = 0; i < row.cells.length; i++) {
+                                row.cells[i].classList.add('past-day');
+                            }
                         }
                     }
                 }
